@@ -64,11 +64,18 @@
             <optional>true</optional>
             <version>1.16.18</version>
         </dependency>
+
         <dependency>
-            <groupId>io.github.silencelwy</groupId>
-            <artifactId>jf-sms-send-sdk</artifactId>
-            <version>1.0.3.4-RELEASE</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.7</version>
+        </dependency>
+
 
     </dependencies>
 
