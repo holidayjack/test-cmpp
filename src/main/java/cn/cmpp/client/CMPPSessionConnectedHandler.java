@@ -31,7 +31,7 @@ public class CMPPSessionConnectedHandler extends  SessionConnectedHandler{
         log.info("cmpp msg: {}", msg);
 
         //获取 endpointEntity
-        EndpointEntity endpointEntity = ctx.channel().attr(GlobalConstance.endpointEntityKey).get();
+//        EndpointEntity endpointEntity = ctx.channel().attr(GlobalConstance.endpointEntityKey).get();
 
         if (msg instanceof CmppDeliverRequestMessage) {
             CmppDeliverRequestMessage e = (CmppDeliverRequestMessage) msg;

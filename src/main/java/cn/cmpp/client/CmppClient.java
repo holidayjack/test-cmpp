@@ -55,7 +55,7 @@ public class CmppClient {
         }
         //sendMsg
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 3; i++) {
             new Thread(()->{
                 try {
                     sendMsg(channelId);
@@ -85,7 +85,7 @@ public class CmppClient {
         String mobile = "18117579330";
         Long mid = 123L;
         String extend= "123";
-        String content = ThreadLocalRandom.current().nextInt()+"___"+"内容";
+        String content = "【测试】"+ThreadLocalRandom.current().nextInt()+"___"+"内容";
 
 
         BaseMessage submitMsg = buildBaseMessage(mobile,content,extend);
@@ -161,8 +161,8 @@ public class CmppClient {
         client.setPort(17890);
         client.setChartset(Charset.forName("utf-8"));
         client.setGroupName("test");
-        client.setUserName("10116");
-        client.setPassword("123456");
+        client.setUserName("qwqga");
+        client.setPassword("adhdg");
         client.setSpCode("123456");
         client.setMsgSrc("1231313131");
         // 最大连接数
