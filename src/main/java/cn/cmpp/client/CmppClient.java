@@ -2,9 +2,11 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.json.JSONUtil;
 import cn.unit.ChannelUtil;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
+import com.zx.sms.common.util.MsgId;
 import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
 import com.zx.sms.connect.manager.cmpp.CMPPClientEndpointEntity;
@@ -55,15 +57,22 @@ public class CmppClient {
         }
         //sendMsg
 
-        for (int i = 0; i < 3; i++) {
             new Thread(()->{
                 try {
-                    sendMsg(channelId);
+
+                    for (int i = 0; i < 1; i++) {
+                        sendMsg(channelId);
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }).start();
-        }
         try {
             System.in.read();
         } catch (IOException e) {
@@ -85,7 +94,7 @@ public class CmppClient {
         String mobile = "18117579330";
         Long mid = 123L;
         String extend= "123";
-        String content = "【测试】"+ThreadLocalRandom.current().nextInt()+"___"+"内容";
+        String content = "【测试】"+ThreadLocalRandom.current().nextInt()+"___"+"内容天山花海的浪漫，目睹张掖丹霞的绚丽，探寻长白山天池的神秘，体验紫鹊界梯田的诗意……行进中国，漫步于画卷。跟随镜头的指引，踏出寻找美丽的脚步，心旷神怡的“中国画”就在身边的青山绿水之间";
 
 
         BaseMessage submitMsg = buildBaseMessage(mobile,content,extend);
@@ -147,6 +156,8 @@ public class CmppClient {
         msg.setRegisteredDelivery((short) 1);
         msg.setServiceId(extend);
         msg.setDestterminalId(mobile);
+        msg.setMsgid(new MsgId("0816155443061320413814"));
+        log.info("CmppSubmitRequestMessage:{}", msg);
         return msg;
 
     }
@@ -157,12 +168,12 @@ public class CmppClient {
         // 开始连接CMPP
         CMPPClientEndpointEntity client = new CMPPClientEndpointEntity();
         client.setId(channelId);
-        client.setHost("58.247.254.164");
+        client.setHost("0.0.0.0");
         client.setPort(17890);
         client.setChartset(Charset.forName("utf-8"));
         client.setGroupName("test");
-        client.setUserName("qwqga");
-        client.setPassword("adhdg");
+        client.setUserName("test");
+        client.setPassword("123456");
         client.setSpCode("123456");
         client.setMsgSrc("1231313131");
         // 最大连接数
