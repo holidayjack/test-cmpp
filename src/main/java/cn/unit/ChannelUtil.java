@@ -1,11 +1,12 @@
 package cn.unit;
 
-import cn.hutool.json.JSONUtil;
 import com.chinamobile.cmos.sms.SmsMessage;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.LongSMSMessage;
+import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
 import com.zx.sms.codec.cmpp.wap.LongMessageFrame;
 import com.zx.sms.codec.cmpp.wap.LongMessageFrameHolder;
+import com.zx.sms.common.util.MsgId;
 import com.zx.sms.connect.manager.EndpointConnector;
 import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
@@ -13,15 +14,16 @@ import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.time.Duration;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class ChannelUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChannelUtil.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelUtil.class);
 
 
     public static ChannelFuture asyncWriteToEntity(final EndpointEntity entity, final Object msg) {
@@ -76,6 +78,8 @@ public class ChannelUtil {
         return promise;
     }
 
+
+
     public <T extends BaseMessage> List<Promise<T>> syncWriteLongMsgToEntity(EndpointEntity e, BaseMessage msg,
                                                                              MessageDTO messageDTO) throws Exception {
 
@@ -92,8 +96,13 @@ public class ChannelUtil {
                 //保证同一条长短信，通过同一个tcp连接发送
                 List<BaseMessage> msgs = new ArrayList<BaseMessage>();
                 for (LongMessageFrame frame : frameList) {
-                    BaseMessage basemsg = lmsg.generateMessage(frame);
+//                    BaseMessage basemsg = lmsg.generateMessage(frame);
+                    CmppSubmitRequestMessage basemsg = (CmppSubmitRequestMessage) lmsg.generateMessage(frame);
 
+                    String ss = "081615544306132041381"+ new Random().nextInt(10);
+                    basemsg.setMsgid(new MsgId(ss));
+
+                    logger.info("CmppSubmitRequestMessage:{}", basemsg);
                     logger.info("long sequenceId: {}, mobile: {}", basemsg.getSequenceNo(), messageDTO.getMobile());
 //                    redisTemplate.opsForValue().set(RedisKey.SMS_SEQID_PREFIX
 //                            + basemsg.getSequenceNo(), JSONUtil.toJsonStr(messageDTO), Duration.ofMinutes(3));
