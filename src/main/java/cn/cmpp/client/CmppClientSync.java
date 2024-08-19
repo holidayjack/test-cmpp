@@ -2,11 +2,9 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.json.JSONUtil;
 import cn.unit.ChannelUtil;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
-import com.zx.sms.common.util.MsgId;
 import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
 import com.zx.sms.connect.manager.cmpp.CMPPClientEndpointEntity;
@@ -17,8 +15,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import cn.unit.MessageDTO;
 
 import java.io.IOException;
@@ -27,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class CmppClient {
+public class CmppClientSync {
     /**
      * 系统连接的统一管理器
      */
@@ -35,7 +31,7 @@ public class CmppClient {
     public static final EndpointManager manager = EndpointManager.INS;
     public static final ChannelUtil channelUtil = new ChannelUtil();
 
-    private static final InternalLogger log = InternalLoggerFactory.getInstance(CmppClient.class);
+    private static final InternalLogger log = InternalLoggerFactory.getInstance(CmppClientSync.class);
 
     public static void main(String[] args) {
         // 添加到系统连接的统一管理器
@@ -156,8 +152,6 @@ public class CmppClient {
         msg.setRegisteredDelivery((short) 1);
         msg.setServiceId(extend);
         msg.setDestterminalId(mobile);
-        msg.setMsgid(new MsgId("0816155443061320413814"));
-        log.info("CmppSubmitRequestMessage:{}", msg);
         return msg;
 
     }
