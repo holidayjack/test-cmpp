@@ -28,7 +28,7 @@ public class CMPPSessionConnectedHandler extends  SessionConnectedHandler{
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        log.info("cmpp msg: {}", msg);
+//        log.info("cmpp msg: {}", msg);
 
         //获取 endpointEntity
 //        EndpointEntity endpointEntity = ctx.channel().attr(GlobalConstance.endpointEntityKey).get();
@@ -175,7 +175,7 @@ public class CMPPSessionConnectedHandler extends  SessionConnectedHandler{
         } else if (msg instanceof CmppSubmitResponseMessage) {
             CmppSubmitResponseMessage e = (CmppSubmitResponseMessage) msg;
 
-            log.info("打印提交记录:{}",JSONUtil.toJsonStr(e));
+//            log.info("打印提交记录:{}",JSONUtil.toJsonStr(e));
             int sequenceId = e.getSequenceNo();
 
 //            Object obj = redisTemplate.opsForValue().get(RedisKey.SMS_SEQID_PREFIX + sequenceId);

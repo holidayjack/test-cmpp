@@ -18,12 +18,19 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.openjdk.jmh.annotations.Mode;
 
 public class CmppClientAsync {
     /**
@@ -33,9 +40,18 @@ public class CmppClientAsync {
     public static final EndpointManager manager = EndpointManager.INS;
     public static final ChannelUtil channelUtil = new ChannelUtil();
 
+
     private static final InternalLogger log = InternalLoggerFactory.getInstance(CmppClientAsync.class);
 
+    public static final ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+
+
+    public static AtomicInteger ac= new AtomicInteger();
     public static void main(String[] args) {
+
+
+
         // 添加到系统连接的统一管理器
         manager.addEndpointEntity(getCmppEndpointEntity(channelId));
         try {
@@ -55,22 +71,22 @@ public class CmppClientAsync {
         }
         //sendMsg
 
-            new Thread(()->{
-                try {
 
-                    for (int i = 0; i < 10000; i++) {
-                        sendMsg(channelId);
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+        synchronized (channelUtil){
+
+            for (int i = 0; i < 2; i++) {
+                executorService.submit(()->{
+                    for (int j = 0; j < 1000; j++) {
+                        sendMsg();
                     }
+                });
+            }
 
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
+
+
+        }
+        log.info("提交总数："+ac.get());
+
         try {
             System.in.read();
         } catch (IOException e) {
@@ -78,7 +94,20 @@ public class CmppClientAsync {
         }
 
     }
-    private static void sendMsg(String channelId) throws Exception {
+
+//    @Benchmark
+////    @BenchmarkMode(Mode.Throughput)
+//    @BenchmarkMode(Mode.All)
+    public static void sendMsg() {
+
+        int i = ac.incrementAndGet();
+
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         // 根据channelNo获取通道信息
         EndpointEntity entity = EndpointManager.INS.getEndpointEntity(channelId);
         if (entity == null || !entity.isValid() || entity.getSingletonConnector().getConnectionNum() < 1) {
