@@ -72,20 +72,15 @@ public class CmppClientAsync {
         //sendMsg
 
 
-        synchronized (channelUtil){
 
-            for (int i = 0; i < 2; i++) {
-                executorService.submit(()->{
-                    for (int j = 0; j < 1000; j++) {
+            for (int i = 0; i < 2000; i++) {
                         sendMsg();
-                    }
-                });
+
             }
 
 
 
-        }
-        log.info("提交总数："+ac.get());
+
 
         try {
             System.in.read();

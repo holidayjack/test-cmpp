@@ -20,8 +20,12 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChannelUtil {
+
+    public static AtomicInteger ac= new AtomicInteger();
+    public static AtomicInteger af= new AtomicInteger();
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelUtil.class);
 
@@ -63,11 +67,20 @@ public class ChannelUtil {
             promise.addListener(new GenericFutureListener() {
                 @Override
                 public void operationComplete(Future future) throws Exception {
+                    Throwable cause = future.cause();
+                    if (cause != null) {
+                        af.incrementAndGet();
+                    }
                     // 如果发送消息失败，记录失败日志
                     if (!future.isSuccess()) {
                         StringBuilder sb = new StringBuilder();
                         sb.append("SendMessage ").append(msg.toString()).append(" Failed. ");
                         logger.error(sb.toString(), future.cause());
+                        int i = af.incrementAndGet();
+                        logger.info("提交失败总数："+i);
+                    }else {
+                        int i = ac.incrementAndGet();
+                        logger.info("提交成功总数："+i);
                     }
                 }
             });
