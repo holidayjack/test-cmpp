@@ -2,11 +2,12 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
-import cn.unit.ChannelUtil;
+import com.zx.sms.common.util.ChannelUtil;
 import cn.unit.MessageDTO;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
 import com.zx.sms.common.util.MsgId;
+import com.zx.sms.connect.manager.EndpointConnector;
 import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
 import com.zx.sms.connect.manager.cmpp.CMPPClientEndpointEntity;
@@ -40,6 +41,7 @@ public class CmppClientAsync {
     public static final EndpointManager manager = EndpointManager.INS;
     public static final ChannelUtil channelUtil = new ChannelUtil();
 
+    public static AtomicInteger atomicInteger = new AtomicInteger(0);
 
     private static final InternalLogger log = InternalLoggerFactory.getInstance(CmppClientAsync.class);
 
@@ -70,17 +72,9 @@ public class CmppClientAsync {
             throw new RuntimeException(e);
         }
         //sendMsg
-
-
-
-            for (int i = 0; i < 2000; i++) {
-                        sendMsg();
-
+            for (int i = 0; i < 10000; i++) {
+                sendMsg();
             }
-
-
-
-
 
         try {
             System.in.read();
@@ -97,11 +91,6 @@ public class CmppClientAsync {
 
         int i = ac.incrementAndGet();
 
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         // 根据channelNo获取通道信息
         EndpointEntity entity = EndpointManager.INS.getEndpointEntity(channelId);
@@ -123,8 +112,31 @@ public class CmppClientAsync {
 
         MessageDTO messageDTO = new MessageDTO(mid, mobile, extend, content);
 
-        EndpointEntity e = EndpointManager.INS.getEndpointEntity(channelId);
-        channelUtil.asyncWriteToEntity(e, submitMsg);
+        EndpointEntity endpointEntity = EndpointManager.INS.getEndpointEntity(channelId);
+//        ChannelFuture channelFuture = channelUtil.asyncWriteToEntity(e, submitMsg);
+//
+//        if (channelFuture !=null ) {
+//            if (channelFuture.isSuccess()){
+//                int i1 = atomicInteger.incrementAndGet();
+//                log.info("发送失败:"+i1);
+//            }else {
+//
+//            }
+//        }
+
+        EndpointConnector conn = EndpointManager.INS.getEndpointConnector(endpointEntity);
+        // report从任意连接回去
+        ChannelFuture f;
+        f = ChannelUtil.asyncWriteToEntity(endpointEntity, submitMsg);
+        int cnt = 5;
+        while (f == null && cnt > 0) {
+            f = ChannelUtil.asyncWriteToEntity(endpointEntity, submitMsg);
+            cnt--;
+        }
+        if (f == null) {
+            Channel ch = conn.fetch(); // 获取连接，保证必写成功
+            ChannelFuture future = ch.writeAndFlush(submitMsg);
+        }
 
         long start = System.currentTimeMillis();
 
@@ -173,10 +185,11 @@ public class CmppClientAsync {
         client.setUseSSL(false);
 
         // 设置限速
-        client.setWriteLimit(200);
+        client.setWriteLimit(20);
 
         // 默认不重发消息
-        client.setReSendFailMsg(false);
+        client.setReSendFailMsg(true);
+        client.setOverSpeedSendCountLimit(3);
         client.setSupportLongmsg(EndpointEntity.SupportLongMessage.BOTH);
 
         List<BusinessHandlerInterface> clienthandlers = new ArrayList<BusinessHandlerInterface>();

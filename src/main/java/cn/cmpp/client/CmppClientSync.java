@@ -2,7 +2,7 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
-import cn.unit.ChannelUtil;
+import com.zx.sms.common.util.ChannelUtil;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
 import com.zx.sms.connect.manager.EndpointEntity;
@@ -53,22 +53,16 @@ public class CmppClientSync {
         }
         //sendMsg
 
-            new Thread(()->{
-                try {
 
-                    for (int i = 0; i < 1; i++) {
-                        sendMsg(channelId);
+
+                    for (int i = 0; i < 10000; i++) {
                         try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException e) {
+                            sendMsg(channelId);
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     }
 
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
         try {
             System.in.read();
         } catch (IOException e) {
@@ -95,10 +89,8 @@ public class CmppClientSync {
 
         BaseMessage submitMsg = buildBaseMessage(mobile,content,extend);
 
-        MessageDTO messageDTO = new MessageDTO(mid, mobile, extend, content);
-
         List<Promise<BaseMessage>> futures = null;
-        futures = channelUtil.syncWriteLongMsgToEntity(channelId, submitMsg,messageDTO);
+        futures = channelUtil.syncWriteLongMsgToEntity(channelId, submitMsg);
         Promise<BaseMessage> frefuture = null;
 
         long start = System.currentTimeMillis();
