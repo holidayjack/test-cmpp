@@ -2,6 +2,7 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
 import com.zx.sms.BaseMessage;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class CmppClientSyncDisonnect {
@@ -33,8 +35,9 @@ public class CmppClientSyncDisonnect {
     public static final List<String> channelIdList = Lists.newArrayList("1", "2", "3", "4");
     public static final EndpointManager manager = EndpointManager.INS;
     public static final ChannelUtil channelUtil = new ChannelUtil();
-
     private static final InternalLogger log = InternalLoggerFactory.getInstance(CmppClientSyncDisonnect.class);
+
+    private static final AtomicInteger atomicInteger = new AtomicInteger(0);
 
     public static void main(String[] args) {
         // 添加到系统连接的统一管理器
@@ -49,20 +52,18 @@ public class CmppClientSyncDisonnect {
          */
         manager.startConnectionCheckTask();
 
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        ThreadUtil.safeSleep(10000);
         //sendMsg
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 20000; i++) {
             try {
-                sendMsg(channelIdList.get(RandomUtil.randomInt(0, 4)));
+                sendMsg();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
+        ThreadUtil.safeSleep(10000);
+        log.info("提交成功:{}", atomicInteger.incrementAndGet());
         try {
             System.in.read();
         } catch (IOException e) {
@@ -71,11 +72,26 @@ public class CmppClientSyncDisonnect {
 
     }
 
-    private static void sendMsg(String channelId) throws Exception {
-        // 根据channelNo获取通道信息
+
+    private static EndpointEntity selectChannel(){
+
+        String channelId = RandomUtil.randomInt(1, 5)+"";
         EndpointEntity entity = EndpointManager.INS.getEndpointEntity(channelId);
+
+        while (entity == null || !entity.isValid() || entity.getSingletonConnector().getConnectionNum() < 1){
+            manager.openEndpoint(entity);
+            channelId = RandomUtil.randomInt(1, 5)+"";
+            entity = EndpointManager.INS.getEndpointEntity(channelId);
+            ThreadUtil.safeSleep(30);
+        }
+        return entity;
+    }
+    private static void sendMsg() throws Exception {
+        // 根据channelNo获取通道信息
+        EndpointEntity entity = selectChannel();
+
         if (entity == null || !entity.isValid() || entity.getSingletonConnector().getConnectionNum() < 1) {
-            log.info("通道无效:"+channelId);
+            log.info("通道无效:"+entity);
             return;
         }
 
@@ -91,7 +107,7 @@ public class CmppClientSyncDisonnect {
         BaseMessage submitMsg = buildBaseMessage(mobile, content, extend);
 
         List<Promise<BaseMessage>> futures = null;
-        futures = channelUtil.syncWriteLongMsgToEntity(channelId, submitMsg);
+        futures = channelUtil.syncWriteLongMsgToEntity(entity.getId(), submitMsg);
         Promise<BaseMessage> frefuture = null;
 
         long start = System.currentTimeMillis();
@@ -103,6 +119,8 @@ public class CmppClientSyncDisonnect {
                         @Override
                         public void operationComplete(Future<BaseMessage> future) throws Exception {
                             if (future.isSuccess()) {
+
+                                atomicInteger.incrementAndGet();
                                 log.info("SubmitRespMessage: {}", future.get());
                             } else {
                                 log.error("submit excep", future.get());
@@ -120,17 +138,17 @@ public class CmppClientSyncDisonnect {
         } else {
             //连接不可写了，等待上一个response回来
             //再把消息发出去
-            Channel nettyChannel = entity.getSingletonConnector().fetch();
-            if (nettyChannel != null) {
-                nettyChannel.writeAndFlush(submitMsg);
-
-                if (frefuture != null) {
-                    frefuture.sync();
-                    frefuture = null;
-                }
-            } else {
-                log.error("channel is null, entity: {}, msg: {}", entity, submitMsg);
-            }
+//            Channel nettyChannel = entity.getSingletonConnector().fetch();
+//            if (nettyChannel != null) {
+//                nettyChannel.writeAndFlush(submitMsg);
+//
+//                if (frefuture != null) {
+//                    frefuture.sync();
+//                    frefuture = null;
+//                }
+//            } else {
+//                log.error("channel is null, entity: {}, msg: {}", entity, submitMsg);
+//            }
         }
         long checkPoint = System.currentTimeMillis();
         log.info("checkPoint cost: {}", (checkPoint - start));
@@ -177,6 +195,7 @@ public class CmppClientSyncDisonnect {
 
         // 设置限速
         client.setWriteLimit(200);
+        client.setReadLimit(200);
 
         // 默认不重发消息
         client.setReSendFailMsg(false);

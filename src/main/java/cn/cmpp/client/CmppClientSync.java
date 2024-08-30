@@ -84,7 +84,8 @@ public class CmppClientSync {
         String mobile = "18117579330";
         Long mid = 123L;
         String extend= "123";
-        String content = "【测试】"+ThreadLocalRandom.current().nextInt()+"___"+"内容天山花海的浪漫，目睹张掖丹霞的绚丽，探寻长白山天池的神秘，体验紫鹊界梯田的诗意……行进中国，漫步于画卷。跟随镜头的指引，踏出寻找美丽的脚步，心旷神怡的“中国画”就在身边的青山绿水之间";
+//        String content = "【测试】"+ThreadLocalRandom.current().nextInt()+"___"+"内容天山花海的浪漫，目睹张掖丹霞的绚丽，探寻长白山天池的神秘，体验紫鹊界梯田的诗意……行进中国，漫步于画卷。跟随镜头的指引，踏出寻找美丽的脚步，心旷神怡的“中国画”就在身边的青山绿水之间";
+        String content = "【测试】"+ThreadLocalRandom.current().nextInt();
 
 
         BaseMessage submitMsg = buildBaseMessage(mobile,content,extend);
@@ -174,7 +175,8 @@ public class CmppClientSync {
         client.setUseSSL(false);
 
         // 设置限速
-        client.setWriteLimit(200);
+        client.setWriteLimit(20);
+        client.setReadLimit(20);
 
         // 默认不重发消息
         client.setReSendFailMsg(false);

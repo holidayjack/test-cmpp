@@ -15,10 +15,13 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class CMPPSessionConnectedHandler extends  SessionConnectedHandler{
 
+
+    private static final AtomicInteger count = new AtomicInteger(0);
 
     private static final InternalLogger log = InternalLoggerFactory.getInstance(CMPPSessionConnectedHandler.class);
 
@@ -112,6 +115,9 @@ public class CMPPSessionConnectedHandler extends  SessionConnectedHandler{
         } else if (msg instanceof CmppSubmitRequestMessage) {
             //接收到 CmppSubmitRequestMessage 消息
             CmppSubmitRequestMessage e = (CmppSubmitRequestMessage) msg;
+
+           log.info("提交成功："+count.incrementAndGet());
+
 
             final List<CmppDeliverRequestMessage> reportlist = new ArrayList<CmppDeliverRequestMessage>();
 
