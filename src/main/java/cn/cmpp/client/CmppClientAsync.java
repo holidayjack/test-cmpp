@@ -2,6 +2,8 @@ package cn.cmpp.client;
 
 
 import cn.hutool.core.convert.Convert;
+import com.chinamobile.cmos.sms.SmsDcs;
+import com.chinamobile.cmos.sms.SmsTextMessage;
 import com.zx.sms.common.util.ChannelUtil;
 import cn.unit.MessageDTO;
 import com.zx.sms.BaseMessage;
@@ -148,12 +150,18 @@ public class CmppClientAsync {
 
     public static BaseMessage buildBaseMessage(String mobile, String content, String extend){
 
+
+
+        SmsTextMessage textMessage = new SmsTextMessage(content,new SmsDcs((byte)15));
+
+
         CmppSubmitRequestMessage msg = new CmppSubmitRequestMessage();
         msg.setSrcId(extend);
-        msg.setMsgContent(content);
+//        msg.setMsgContent(content);
         msg.setRegisteredDelivery((short) 1);
         msg.setServiceId(extend);
         msg.setDestterminalId(mobile);
+        msg.setMsg(textMessage);
         msg.setMsgid(new MsgId("0817160745018272345582"));
         return msg;
 

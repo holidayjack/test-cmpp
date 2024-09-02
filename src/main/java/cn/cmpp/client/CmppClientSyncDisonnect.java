@@ -4,12 +4,15 @@ package cn.cmpp.client;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.chinamobile.cmos.sms.SmsDcs;
+import com.chinamobile.cmos.sms.SmsTextMessage;
 import com.google.common.collect.Lists;
 import com.zx.sms.BaseMessage;
 import com.zx.sms.codec.cmpp.msg.CmppSubmitRequestMessage;
 import com.zx.sms.common.util.ChannelUtil;
 import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
+import com.zx.sms.connect.manager.SignatureType;
 import com.zx.sms.connect.manager.cmpp.CMPPClientEndpointEntity;
 import com.zx.sms.handler.api.BusinessHandlerInterface;
 import io.netty.channel.Channel;
@@ -101,7 +104,8 @@ public class CmppClientSyncDisonnect {
         String mobile = "18117579330";
         Long mid = 123L;
         String extend = "123";
-        String content = "【测试】" + ThreadLocalRandom.current().nextInt() + "___" + "内容天山花海的浪漫，目睹张掖丹霞的绚丽，探寻长白山天池的神秘，体验紫鹊界梯田的诗意……行进中国，漫步于画卷。跟随镜头的指引，踏出寻找美丽的脚步，心旷神怡的“中国画”就在身边的青山绿水之间";
+//        String content = "【测试】" + ThreadLocalRandom.current().nextInt() + "___" + "内容天山花海的浪漫，目睹张掖丹霞的绚丽，探寻长白山天池的神秘，体验紫鹊界梯田的诗意……行进中国，漫步于画卷。跟随镜头的指引，踏出寻找美丽的脚步，心旷神怡的“中国画”就在身边的青山绿水之间";
+        String content = "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111";
 
 
         BaseMessage submitMsg = buildBaseMessage(mobile, content, extend);
@@ -157,12 +161,17 @@ public class CmppClientSyncDisonnect {
 
     public static BaseMessage buildBaseMessage(String mobile, String content, String extend) {
 
+        SmsTextMessage textMessage = new SmsTextMessage(content,new SmsDcs((byte)15));
+
+
         CmppSubmitRequestMessage msg = new CmppSubmitRequestMessage();
         msg.setSrcId(extend);
-        msg.setMsgContent(content);
+//        msg.setMsgContent(content);
         msg.setRegisteredDelivery((short) 1);
         msg.setServiceId(extend);
         msg.setDestterminalId(mobile);
+        msg.setMsg(textMessage);
+
         return msg;
 
     }
@@ -197,6 +206,7 @@ public class CmppClientSyncDisonnect {
         client.setWriteLimit(200);
         client.setReadLimit(200);
 
+//        client.setSignatureType(new SignatureType(false,"【测试】"));
         // 默认不重发消息
         client.setReSendFailMsg(false);
         client.setSupportLongmsg(EndpointEntity.SupportLongMessage.BOTH);
